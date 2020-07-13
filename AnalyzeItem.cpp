@@ -4,7 +4,9 @@
 #include "stdafx.h"
 #include "TestErrorStream.h"
 #include "AnalyzeItem.h"
+#include "BasicOperation.h"
 
+#define ENABLE_OUTPUT    1
 
 // CAnalyzeItem
 
@@ -13,6 +15,8 @@ IMPLEMENT_DYNAMIC(CAnalyzeItem, CWnd)
 	: nCapableLength(0)
 	, nCurrentPos(0)
 	, globalHead(0)
+	, otEdit(0)
+	, csOutput(L"")
 {
 
 }
@@ -50,22 +54,32 @@ LinklistHead* CAnalyzeItem::InsertItem(LinklistHead* from, BYTE* bt, UINT nLen)
 		return 0;
 
 	LinklistHead* pFeedBack;
-	pFeedBack = (LinklistHead*)(((BYTE*)globalHead ) + nCurrentPos);
-	pFeedBack->last = from;
-	pFeedBack->next = from->next;
+	pFeedBack = (LinklistHead*)(((BYTE*)globalHead) + nCurrentPos);
+	if(pFeedBack != globalHead)
+	{
+		pFeedBack->last = from;
+		pFeedBack->next = from->next; 
+		if(from->next)
+		from->next->last = pFeedBack;
+		pFeedBack->last->next = pFeedBack;
+	}
 	pFeedBack->nLength = nLen;
 
-	from->next = pFeedBack;
 
-	if(from->next)
-		from->next->last = pFeedBack;
+
 	BYTE* btBeg;
 	btBeg = (((BYTE*)globalHead ) + nCurrentPos + sizeof(LinklistHead));
 	for(int i = 0 ;i < nLen; i++)
 	{
 		btBeg[i] = bt[i];
 	}
-	pFeedBack += nLen + sizeof(LinklistHead);
+	//pFeedBack += globalHead + sizeof(LinklistHead);
+	nCurrentPos += nLen + sizeof(LinklistHead);
+
+#ifdef ENABLE_OUTPUT
+
+	TestOutAll();
+#endif
 	return pFeedBack;
 }
 
@@ -106,13 +120,18 @@ LinklistHead* CAnalyzeItem::SearchBuffer(LinklistHead* from, BYTE* bt, UINT nLen
 void CAnalyzeItem::SetCurrentItemType(LinklistHead* current, UINT nType)
 {
 	current->type = nType;
+#ifdef ENABLE_OUTPUT
+
+	TestOutAll();
+#endif
 }
 
 
 LinklistHead* CAnalyzeItem::SeekTailOfCurrent(LinklistHead* Current)
 {
-	LinklistHead* pFeedback;
+	LinklistHead* pFeedback, *pLast;
 	pFeedback = Current;
+	pLast = Current;
 	pFeedback = pFeedback->next;
 	while(pFeedback)
 	{
@@ -121,8 +140,93 @@ LinklistHead* CAnalyzeItem::SeekTailOfCurrent(LinklistHead* Current)
 			pFeedback = pFeedback->last;
 			break;
 		}
+		pLast = pFeedback;
 		pFeedback = pFeedback->next;
 	}
-	return pFeedback ? pFeedback : Current;
+	return pFeedback ? pFeedback : pLast;
 
+}
+
+
+int CAnalyzeItem::GetSorageLength()
+{
+	return nCurrentPos; 
+}
+
+
+void CAnalyzeItem::TransformToSave()
+{
+	LinklistHead* pThis;
+	pThis = globalHead;
+	while(pThis)
+	{
+		if(pThis->last)
+		{
+			pThis->last->next = (LinklistHead*)((UINT)pThis->last->next - (UINT)globalHead);
+			pThis->last = (LinklistHead*)((UINT)pThis->last - (UINT)globalHead);
+		}
+		pThis = pThis->next;
+	}
+}
+
+
+void CAnalyzeItem::Anti_TransformToSave()
+{
+	LinklistHead* pThis;
+	pThis = globalHead;
+	while(pThis)
+	{
+		if(pThis->next)
+		{
+			pThis->next = (LinklistHead*)((UINT)pThis->next + (UINT)globalHead);
+			pThis->next->last = (LinklistHead*)((UINT)pThis->next->last + (UINT)globalHead);
+		}
+		pThis = pThis->next;
+	}
+}
+
+
+void CAnalyzeItem::EnableOutput(CEdit* edit)
+{
+	otEdit = edit;
+}
+
+
+void CAnalyzeItem::TestOutAll()
+{
+	if(!otEdit)return;
+	LinklistHead* pThis;
+	CString cs;
+
+	csOutput = L"";
+	pThis = globalHead;
+
+	while(pThis)
+	{
+		cs.Format(L"InsertItem  This: %d Last: %d next: %d type: %d info: ", (UINT)pThis, (UINT)pThis->last, (UINT)pThis->next, pThis->type);
+		csOutput += cs;
+		csOutput += (WCHAR*)((BYTE*)(pThis + 1));
+		csOutput += L"\r\n";
+		pThis = pThis->next;
+		otEdit->SetWindowTextW(csOutput);
+	}
+}
+
+
+void CAnalyzeItem::SaveInPath(CString cs)
+{
+	TransformToSave();
+	CBasicOperation::SaveFile_InPath(cs, (BYTE*)globalHead, nCurrentPos);
+	Anti_TransformToSave();
+}
+
+
+void CAnalyzeItem::readInPath(CString cs)
+{
+	CBasicOperation::ReadFile_InPath(cs, (BYTE*)globalHead, nCurrentPos);
+	Anti_TransformToSave();
+#ifdef ENABLE_OUTPUT
+
+	TestOutAll();
+#endif
 }
