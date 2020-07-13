@@ -1,4 +1,4 @@
-// AnalyzeItem.cpp : ʵ���ļ�
+// AnalyzeItem.cpp : 实现文件
 //
 
 #include "stdafx.h"
@@ -27,7 +27,7 @@ END_MESSAGE_MAP()
 
 
 
-// CAnalyzeItem ��Ϣ��������
+// CAnalyzeItem 消息处理程序
 
 
 void CAnalyzeItem::Create(BYTE* buff, UINT nMax)
