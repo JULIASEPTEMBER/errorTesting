@@ -4,7 +4,7 @@
 
 // CCreateTestDlg 对话框
 namespace Operation{
-	static const UINT NAME = 1, INPUT = 2, OUTPUT = 3;//folder relationship while the bigger one has lower priority 
+	static const UINT NAME_TYPE = 1, INPUT_TYPE = 2, OUTPUT_TYPE = 3;//folder relationship while the bigger one has lower priority 
 };
 
 class CCreateTestDlg : public CDialogEx
@@ -33,4 +33,8 @@ public:
 	
 
 	virtual BOOL OnInitDialog();
+	void Create();
+	afx_msg void OnBnClickedButtonSave();
+	afx_msg void OnBnClickedButtonRead();
+	CEdit m_Edit_Out;
 };
