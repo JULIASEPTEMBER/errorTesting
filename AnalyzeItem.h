@@ -31,6 +31,15 @@ public:
 	LinklistHead* SearchBuffer(LinklistHead* from, BYTE* bt, UINT nLen, UINT Type);//search in a area check the type 
 	void SetCurrentItemType(LinklistHead* current, UINT nType);//set current buffer
 	LinklistHead* SeekTailOfCurrent(LinklistHead* Current);//output the tail of this buffer
+	int GetSorageLength();// get the length
+	void TransformToSave();//transform the linklist pointer 
+	void Anti_TransformToSave();//back transform the linklist 
+	void EnableOutput(CEdit* edit);//let the output buffer can send into a edit ctrl
+	CEdit* otEdit;//output the edit
+	CString csOutput;//output stream
+	void TestOutAll();// seek all info 
+	void SaveInPath(CString cs);//transform to a file type and save it in particular path
+	void readInPath(CString cs);//get buffer in file and transform them into linklist
 };
 
 
