@@ -39,4 +39,7 @@ public:
 	CEdit m_Edit_Out;
 	afx_msg void OnBnClickedButtonRun();
 	void CheckInfo_SendBack(BYTE *bt, UINT nLen);
+	typedef int (CALLBACK* PLCIDECALLBACK)(int *pInfo);//
+	int CALLBACK ExchangeData(int hhv, PLCIDECALLBACK pFC, void *pParam);
+	PLCIDECALLBACK Funname;//callback function name 
 };
