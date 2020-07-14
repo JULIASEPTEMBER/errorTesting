@@ -25,9 +25,10 @@
 CCom *cmCom;
 // CTestErrorStreamApp
 
-
+CTestErrorStreamApp* pPointerView;
 
 CCreateTestDlg m_CreateTestDlg;
+UINT InfoOfCall;
 BEGIN_MESSAGE_MAP(CTestErrorStreamApp, CWinAppEx)
 	ON_COMMAND(ID_APP_ABOUT, &CTestErrorStreamApp::OnAppAbout)
 	// 基于文件的标准文档命令
@@ -158,6 +159,8 @@ BOOL CTestErrorStreamApp::InitInstance()
 	m_CreateTestDlg.Create();
 	nGlobalThread = 1;
 	TCPCreatThread();
+	pPointerView = this;
+	m_CreateTestDlg.ExchangeData(0, TransformClass, (void*)&InfoOfCall);  
 	return TRUE;
 }
 
@@ -267,4 +270,19 @@ UINT TCPThreadProc(LPVOID pm)
 		}
 	}
 	return 0;
+}
+int CALLBACK CTestErrorStreamApp::TransformClass(int *pInfo) //par   
+{
+
+	OUTPUT_SENDMSG_COM *ot;
+	ot = (OUTPUT_SENDMSG_COM*)pInfo;
+	switch(ot->nType)
+	{
+	case MSG_SEND:
+		cmCom->Writer((char*)ot->buffer, ot->nLen);
+		break;
+	}
+//pPointerView->Call_D3DInfo(pInfo);
+	return 1;
+
 }
