@@ -17,6 +17,7 @@ IMPLEMENT_DYNAMIC(CAnalyzeItem, CWnd)
 	, globalHead(0)
 	, otEdit(0)
 	, csOutput(L"")
+	, pSelection(0)
 {
 
 }
@@ -28,7 +29,6 @@ CAnalyzeItem::~CAnalyzeItem()
 
 BEGIN_MESSAGE_MAP(CAnalyzeItem, CWnd)
 END_MESSAGE_MAP()
-
 
 
 // CAnalyzeItem 消息处理程序
@@ -60,7 +60,7 @@ LinklistHead* CAnalyzeItem::InsertItem(LinklistHead* from, BYTE* bt, UINT nLen)
 		pFeedBack->last = from;
 		pFeedBack->next = from->next; 
 		if(from->next)
-		from->next->last = pFeedBack;
+			from->next->last = pFeedBack;
 		pFeedBack->last->next = pFeedBack;
 	}
 	pFeedBack->nLength = nLen;
@@ -87,7 +87,10 @@ LinklistHead* CAnalyzeItem::InsertItem(LinklistHead* from, BYTE* bt, UINT nLen)
 LinklistHead* CAnalyzeItem::SearchBuffer(LinklistHead* from, BYTE* bt, UINT nLen, UINT Type)
 {
 	if(nCapableLength <= nCurrentPos + nLen + sizeof(LinklistHead))
+	{
+		pSelection = 0;
 		return 0;
+	}
 	LinklistHead* pFeedBack;
 	LinklistHead* pThis;
 	UINT nCheckSame;
@@ -107,12 +110,13 @@ LinklistHead* CAnalyzeItem::SearchBuffer(LinklistHead* from, BYTE* bt, UINT nLen
 			}
 			if(nCheckSame == nLen)
 			{
+				pSelection = pThis;
 				return pThis;
 			}
 		}
 		pThis = pThis->next;
 	}
-
+	pSelection =  0;
 	return 0;
 }
 
@@ -249,4 +253,46 @@ int CAnalyzeItem::GetNearHeadBrench(LinklistHead* pSeek, LinklistHead** pGet)
 		pThis =  pThis->last;
 	}
 	return 0;
+}
+
+
+void CAnalyzeItem::RemoveBlock()
+{
+	if(!pSelection)return;
+	LinklistHead* get = SeekTailOfCurrent(pSelection);
+	LinklistHead* pThis;
+	pThis = pSelection;
+	if(pSelection == globalHead)
+	{
+		
+		globalHead = get->next;
+	}
+	while(pThis && pThis != get->next)
+	{
+		if(pThis->last)
+			pThis->last->next = pThis->next;
+		if(pThis->next)
+			pThis->next->last = pThis->last;
+		pThis = pThis->next;
+	}
+#ifdef ENABLE_OUTPUT
+
+	TestOutAll();
+#endif
+}
+
+
+LinklistHead* CAnalyzeItem::SeekLinkTail()
+{
+	LinklistHead* pThis, *pLast;
+	pThis =  globalHead;
+	while(pThis)
+	{
+		pLast = pThis;
+		pThis = pThis->next;
+	}
+#ifdef ENABLE_OUTPUT
+	TestOutAll();
+#endif
+	return pLast;
 }
