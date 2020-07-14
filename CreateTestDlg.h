@@ -42,4 +42,6 @@ public:
 	typedef int (CALLBACK* PLCIDECALLBACK)(int *pInfo);//
 	int CALLBACK ExchangeData(int hhv, PLCIDECALLBACK pFC, void *pParam);
 	PLCIDECALLBACK Funname;//callback function name 
+	afx_msg void OnBnClickedButtonSelect();
+
 };
