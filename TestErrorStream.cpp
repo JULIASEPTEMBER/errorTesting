@@ -282,7 +282,7 @@ int CALLBACK CTestErrorStreamApp::TransformClass(int *pInfo) //par
 		cmCom->Writer((char*)ot->buffer, ot->nLen);
 		break;
 	}
-//pPointerView->Call_D3DInfo(pInfo);
+	//pPointerView->Call_D3DInfo(pInfo);
 	return 1;
 
 }
