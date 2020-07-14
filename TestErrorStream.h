@@ -38,6 +38,7 @@ public:
 	CWinThread* m_pThread_TCP;
 	void TCPCreatThread(void);			
 	friend UINT TCPThreadProc(LPVOID pm);
+	static int CALLBACK TransformClass(int *pInfo); //par
 };
 
 extern CTestErrorStreamApp theApp;
