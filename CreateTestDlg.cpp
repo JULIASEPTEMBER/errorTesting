@@ -13,12 +13,14 @@
 CAnalyzeItem m_AnalyzeItem;
 #define MAX_CAPABLE   100000
 BYTE Global_buf[MAX_CAPABLE];
+	LinklistHead* pRemTail;
 
 IMPLEMENT_DYNAMIC(CCreateTestDlg, CDialogEx)
 
 
 	CCreateTestDlg::CCreateTestDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CCreateTestDlg::IDD, pParent)
+	
 {
 
 }
@@ -45,6 +47,7 @@ BEGIN_MESSAGE_MAP(CCreateTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CCreateTestDlg::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_READ, &CCreateTestDlg::OnBnClickedButtonRead)
 	ON_BN_CLICKED(IDC_BUTTON_RUN, &CCreateTestDlg::OnBnClickedButtonRun)
+	ON_BN_CLICKED(IDC_BUTTON_SELECT, &CCreateTestDlg::OnBnClickedButtonSelect)
 END_MESSAGE_MAP()
 
 
@@ -53,8 +56,7 @@ END_MESSAGE_MAP()
 
 void CCreateTestDlg::OnBnClickedButtonPush()
 {
-	using namespace Operation;
-	static LinklistHead* pRemTail;
+	using namespace Operation; 
 	if(pRemTail == 0)
 		pRemTail = (LinklistHead*)Global_buf;
 	WCHAR *wc;
@@ -67,7 +69,7 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 	wc = new WCHAR [nLen + 1];
 	m_Edit_Name.GetWindowTextW(wc, nLen + 1);
 
-	pGet = m_AnalyzeItem.SearchBuffer((LinklistHead*)Global_buf, (BYTE*)wc, sizeof(WCHAR) * ( nLen + 1 ), NAME_TYPE);
+	pGet = m_AnalyzeItem.SearchBuffer((LinklistHead*)m_AnalyzeItem.globalHead, (BYTE*)wc, sizeof(WCHAR) * ( nLen + 1 ), NAME_TYPE);
 	if(pGet)
 	{
 		pGet = m_AnalyzeItem.SeekTailOfCurrent(pGet);
@@ -94,7 +96,7 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 	{
 		wc  = new WCHAR[nLen + 1];
 		m_Edit_Port_In.GetWindowTextW(wc, nLen + 1);
-		
+
 
 		CString cs, csOutput;
 		btTrans = new BYTE[nLen / 2];
@@ -106,13 +108,13 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 					csOutput += L"0";
 				cs.Format(L"%x", btTrans[i]);
 				csOutput += cs;
-				
+
 			}
-				nLen = csOutput.GetLength();
-				wcscpy(wc, csOutput);
+			nLen = csOutput.GetLength();
+			wcscpy(wc, csOutput);
 		}
 		if(btTrans)
-		delete btTrans;
+			delete btTrans;
 		pInput = m_AnalyzeItem.InsertItem(pGet, (BYTE*)wc, (1 + nLen) * sizeof(WCHAR));
 		m_AnalyzeItem.SetCurrentItemType(pInput, INPUT_TYPE);
 
@@ -125,7 +127,7 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 			delete wc;
 	}
 
-	
+
 
 	//////////////////////////////////////////////////////////////////////////////////
 
@@ -145,7 +147,7 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 			pRemTail = pInput;
 			pGet = pRemTail;
 		}
-	delete wc;
+		delete wc;
 	}
 	//////////////////////////////////////////////////////////////////////////////////
 
@@ -164,6 +166,7 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 
 void CCreateTestDlg::OnBnClickedButtonRemove()
 {
+	m_AnalyzeItem.RemoveBlock();
 	// TODO: 在此添加控件通知处理程序代码
 }
 
@@ -210,6 +213,7 @@ void CCreateTestDlg::OnBnClickedButtonSave()
 void CCreateTestDlg::OnBnClickedButtonRead()
 { 
 	m_AnalyzeItem.readInPath(L"want\This\LinklistBuf.lt");
+	pRemTail = m_AnalyzeItem.SeekLinkTail();
 	// TODO: 在此添加控件通知处理程序代码
 }
 
@@ -267,7 +271,7 @@ void CCreateTestDlg::CheckInfo_SendBack(BYTE *bt, UINT nLen)
 			if(bt[i] == 0x0d)
 			{
 				wcscpy(wcOutput, csOutput);
-				pGet = m_AnalyzeItem.SearchBuffer((LinklistHead*)Global_buf, (BYTE*)wcOutput, csOutput.GetLength() * sizeof(WCHAR), INPUT_TYPE);
+				pGet = m_AnalyzeItem.SearchBuffer((LinklistHead*)m_AnalyzeItem.globalHead, (BYTE*)wcOutput, csOutput.GetLength() * sizeof(WCHAR), INPUT_TYPE);
 				if(pGet)
 				{
 					if(m_AnalyzeItem.GetNearHeadBrench(pGet, &pParBr))
@@ -302,6 +306,23 @@ void CCreateTestDlg::CheckInfo_SendBack(BYTE *bt, UINT nLen)
 int CALLBACK CCreateTestDlg::ExchangeData(int hhv, PLCIDECALLBACK pFC, void *pParam)//
 {
 
-Funname = pFC;                     // 
-return 0;
+	Funname = pFC;                     // 
+	return 0;
+}
+
+
+void CCreateTestDlg::OnBnClickedButtonSelect()
+{
+
+	CString cs;
+	UINT nLen;
+	WCHAR* wc;
+	using namespace Operation;
+	LinklistHead* pGet;
+
+	nLen = m_Edit_Name.GetWindowTextLengthW();
+	wc = new WCHAR[nLen + 1];
+	m_Edit_Name.GetWindowTextW(wc, nLen + 1);
+	m_AnalyzeItem.SearchBuffer((LinklistHead*)m_AnalyzeItem.globalHead, (BYTE*)wc, nLen * sizeof(WCHAR), NAME_TYPE);
+	// TODO: 在此添加控件通知处理程序代码
 }
