@@ -215,6 +215,8 @@ void CAnalyzeItem::TestOutAll()
 
 void CAnalyzeItem::SaveInPath(CString cs)
 {
+	if(!nCurrentPos)return;
+
 	TransformToSave();
 	CBasicOperation::SaveFile_InPath(cs, (BYTE*)globalHead, nCurrentPos);
 	Anti_TransformToSave();
@@ -225,8 +227,26 @@ void CAnalyzeItem::readInPath(CString cs)
 {
 	CBasicOperation::ReadFile_InPath(cs, (BYTE*)globalHead, nCurrentPos);
 	Anti_TransformToSave();
-#ifdef ENABLE_OUTPUT
 
+#ifdef ENABLE_OUTPUT
 	TestOutAll();
 #endif
+}
+
+
+int CAnalyzeItem::GetNearHeadBrench(LinklistHead* pSeek, LinklistHead** pGet)
+{
+	LinklistHead* pThis;
+	UINT nLevel =  pSeek->type;
+	pThis = pSeek;
+	while(pThis)
+	{
+		if(pThis->type < nLevel)
+		{
+			*pGet = pThis;
+			return 1;
+		}
+		pThis =  pThis->last;
+	}
+	return 0;
 }
