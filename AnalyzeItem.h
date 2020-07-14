@@ -40,6 +40,7 @@ public:
 	void TestOutAll();// seek all info 
 	void SaveInPath(CString cs);//transform to a file type and save it in particular path
 	void readInPath(CString cs);//get buffer in file and transform them into linklist
+	int GetNearHeadBrench(LinklistHead* pSeek, LinklistHead** pGet);//return the nearest parent brench
 };
 
 
