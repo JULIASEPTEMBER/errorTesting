@@ -23,7 +23,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public: 
 	void Create(BYTE* buff, UINT nMax);
-	LinklistHead* globalHead;//original parent chain blcok
+	LinklistHead* globalHead, *pSelection;//original parent chain blcok
 	UINT nCapableLength;//max buffer that contains the linklists 
 	UINT nCurrentPos;//current soraging position 
 
@@ -41,6 +41,8 @@ public:
 	void SaveInPath(CString cs);//transform to a file type and save it in particular path
 	void readInPath(CString cs);//get buffer in file and transform them into linklist
 	int GetNearHeadBrench(LinklistHead* pSeek, LinklistHead** pGet);//return the nearest parent brench
+	void RemoveBlock();//delete the selected block and it's following series
+	LinklistHead* SeekLinkTail();//return the tail of whole line
 };
 
 
