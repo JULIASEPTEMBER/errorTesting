@@ -37,4 +37,6 @@ public:
 	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnBnClickedButtonRead();
 	CEdit m_Edit_Out;
+	afx_msg void OnBnClickedButtonRun();
+	void CheckInfo_SendBack(BYTE *bt, UINT nLen);
 };
