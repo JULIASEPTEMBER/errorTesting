@@ -84,14 +84,35 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 
 
 
-	//////////////////////////////////////////////////////////////////////////////////output the formulation of analyzing 
+	//////////////////////////////////////////////////////////////////////////////////input the formulation of analyzing 
 	LinklistHead* pInput;
+	BYTE *btTrans = 0;
+	UINT nGetTrans;
 	nLen = m_Edit_Port_In.GetWindowTextLengthW();
+	wc = 0;
 	if(nLen)
 	{
-		wc = new WCHAR[nLen + 1];
+		wc  = new WCHAR[nLen + 1];
 		m_Edit_Port_In.GetWindowTextW(wc, nLen + 1);
+		
 
+		CString cs, csOutput;
+		btTrans = new BYTE[nLen / 2];
+		if(CBasicOperation::TransformToHex(wc, btTrans, nGetTrans))
+		{
+			for(int i = 0; i < nGetTrans; i ++)
+			{
+				if(btTrans[i] < 16)
+					csOutput += L"0";
+				cs.Format(L"%x", btTrans[i]);
+				csOutput += cs;
+				
+			}
+				nLen = csOutput.GetLength();
+				wcscpy(wc, csOutput);
+		}
+		if(btTrans)
+		delete btTrans;
 		pInput = m_AnalyzeItem.InsertItem(pGet, (BYTE*)wc, (1 + nLen) * sizeof(WCHAR));
 		m_AnalyzeItem.SetCurrentItemType(pInput, INPUT_TYPE);
 
@@ -100,7 +121,8 @@ void CCreateTestDlg::OnBnClickedButtonPush()
 			pRemTail = pInput;
 			pGet = pRemTail;
 		}
-	delete wc;
+		if(wc)
+			delete wc;
 	}
 
 	
@@ -212,7 +234,9 @@ void CCreateTestDlg::CheckInfo_SendBack(BYTE *bt, UINT nLen)
 	static UINT nSaveLen, flag, nGetLen;
 	CString csOutput, cs;
 	WCHAR wcOutput[1000];
-	LinklistHead* pGet;
+	LinklistHead* pGet, *pParBr;
+	BYTE btOutput[1000];
+	UINT nLenOutput = 0;
 
 	for(int i = 0 ;i < nLen; i ++)
 	{
@@ -246,11 +270,24 @@ void CCreateTestDlg::CheckInfo_SendBack(BYTE *bt, UINT nLen)
 				pGet = m_AnalyzeItem.SearchBuffer((LinklistHead*)Global_buf, (BYTE*)wcOutput, csOutput.GetLength() * sizeof(WCHAR), INPUT_TYPE);
 				if(pGet)
 				{
-					if(m_AnalyzeItem.GetNearHeadBrench(pGet, &pGet))
+					if(m_AnalyzeItem.GetNearHeadBrench(pGet, &pParBr))
 					{
-						cs = (WCHAR*)(pGet + 1);
-						MessageBox(cs);
-
+						cs = (WCHAR*)(pParBr + 1);
+						//MessageBox(cs);
+						if(pGet->next && pGet->next->type == OUTPUT_TYPE)
+						{
+							pGet = pGet->next;
+							cs = (WCHAR*)(pGet + 1);
+							//MessageBox(cs);
+							if(CBasicOperation::TransformToHex(cs, btOutput, nLenOutput))
+							{
+								OUTPUT_SENDMSG_COM ot;
+								ot.nType =  MSG_SEND;
+								ot.nLen = nLenOutput;
+								ot.buffer = btOutput;
+								Funname((int*)&ot);
+							}
+						}
 					}
 				}
 			}
@@ -259,4 +296,12 @@ void CCreateTestDlg::CheckInfo_SendBack(BYTE *bt, UINT nLen)
 		}
 	}
 
+}
+
+
+int CALLBACK CCreateTestDlg::ExchangeData(int hhv, PLCIDECALLBACK pFC, void *pParam)//
+{
+
+Funname = pFC;                     // 
+return 0;
 }
