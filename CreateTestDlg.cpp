@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CCreateTestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_PUSH2, &CCreateTestDlg::OnBnClickedButtonPush2)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CCreateTestDlg::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_READ, &CCreateTestDlg::OnBnClickedButtonRead)
+	ON_BN_CLICKED(IDC_BUTTON_RUN, &CCreateTestDlg::OnBnClickedButtonRun)
 END_MESSAGE_MAP()
 
 
@@ -174,6 +175,12 @@ void CCreateTestDlg::Create()
 void CCreateTestDlg::OnBnClickedButtonSave()
 { 
 	m_AnalyzeItem.SaveInPath(L"want\This\LinklistBuf.lt");
+	CString cs, csot;
+	for(int i = '0' ; i < 'z'; i ++)
+	{
+		cs.Format(L"-%c, %x\r\n", i, i); csot += cs;
+	}
+	m_Edit_Out.SetWindowTextW(csot);
 	// TODO: 在此添加控件通知处理程序代码
 }
 
@@ -182,4 +189,74 @@ void CCreateTestDlg::OnBnClickedButtonRead()
 { 
 	m_AnalyzeItem.readInPath(L"want\This\LinklistBuf.lt");
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CCreateTestDlg::OnBnClickedButtonRun()
+{
+	CString cs = L"aa   01   ff ea FF ";
+	UINT nLen = cs.GetLength();
+	BYTE bt[100];
+	CBasicOperation::TransformToHex(cs, bt, nLen);
+	CString csGo;
+	csGo.Format(L"%x, %x, %x",0xff, 0xaa, 0xbb);
+	MessageBox(csGo);
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CCreateTestDlg::CheckInfo_SendBack(BYTE *bt, UINT nLen)
+{
+	using namespace Operation;
+	static BYTE Save[1000];
+	static UINT nSaveLen, flag, nGetLen;
+	CString csOutput, cs;
+	WCHAR wcOutput[1000];
+	LinklistHead* pGet;
+
+	for(int i = 0 ;i < nLen; i ++)
+	{
+		switch(flag)
+		{
+		case 0:
+			flag = bt[i] == 0xaa ? 1 : 0;
+			break;
+		case 1:
+			flag = bt[i] == 0x55 ? 2 : 0;
+			break;
+		case 2:
+			flag = 3;
+			nSaveLen = 0;
+			nGetLen = bt[i];
+			break;
+		case 3:
+			if(bt[i] < 16)csOutput += L"0";
+			cs.Format(L"%x", bt[i]); csOutput += cs;
+			Save[nSaveLen] = bt[i];
+			nSaveLen ++;
+			if(nSaveLen == nGetLen)
+			{
+				flag = 4;
+			}
+			break; 
+		case 4:
+			if(bt[i] == 0x0d)
+			{
+				wcscpy(wcOutput, csOutput);
+				pGet = m_AnalyzeItem.SearchBuffer((LinklistHead*)Global_buf, (BYTE*)wcOutput, csOutput.GetLength() * sizeof(WCHAR), INPUT_TYPE);
+				if(pGet)
+				{
+					if(m_AnalyzeItem.GetNearHeadBrench(pGet, &pGet))
+					{
+						cs = (WCHAR*)(pGet + 1);
+						MessageBox(cs);
+
+					}
+				}
+			}
+			flag = 0;
+			break;
+		}
+	}
+
 }
