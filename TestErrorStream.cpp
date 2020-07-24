@@ -13,17 +13,27 @@
 #include "TestErrorStreamView.h"
 #include "CreateTestDlg.h"
 #include "ComControl.h"
+#include "Dlg_AnalyzeWave.h"
+
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
+#define CREATE_ERRORTESTING			1 << 0
+#define CREATE_WAVE_SIGHT			1 << 1
+
+
+#define BASIC_CREATE			CREATE_WAVE_SIGHT
 
 
 
 CCom *cmCom;
 // CTestErrorStreamApp
+
+CDlg_AnalyzeWave m_Dlg_AnalyzeWave;
 
 CTestErrorStreamApp* pPointerView;
 
@@ -156,12 +166,22 @@ BOOL CTestErrorStreamApp::InitInstance()
 	pMainFrame->UpdateWindow();
 
 
-	m_CreateTestDlg.Create();
-	nGlobalThread = 1;
-	TCPCreatThread();
-	pPointerView = this;
-	m_CreateTestDlg.ExchangeData(0, TransformClass, (void*)&InfoOfCall);  
+	if(BASIC_CREATE & CREATE_ERRORTESTING)
+	{
+		m_CreateTestDlg.Create();
+		nGlobalThread = 1;
+		TCPCreatThread();
+		pPointerView = this;
+		m_CreateTestDlg.ExchangeData(0, TransformClass, (void*)&InfoOfCall);  
+
+	}
+	if(BASIC_CREATE & CREATE_WAVE_SIGHT)
+	{
+		m_Dlg_AnalyzeWave.Create((HWND)nPointerViewHWND);
+		((CTestErrorStreamView*)nPointerView)->ExchangeData(0, TransformClass, (void*)&InfoOfCall);  
+	}
 	return TRUE;
+
 }
 
 int CTestErrorStreamApp::ExitInstance()
@@ -271,6 +291,8 @@ UINT TCPThreadProc(LPVOID pm)
 	}
 	return 0;
 }
+
+
 int CALLBACK CTestErrorStreamApp::TransformClass(int *pInfo) //par   
 {
 
@@ -280,6 +302,16 @@ int CALLBACK CTestErrorStreamApp::TransformClass(int *pInfo) //par
 	{
 	case MSG_SEND:
 		cmCom->Writer((char*)ot->buffer, ot->nLen);
+		break;
+	case MSG_POP_INFO:
+		{
+			int pt;
+			pt = *((int*)ot->buffer);
+			m_Dlg_AnalyzeWave.InsertDatas(pt);
+		}
+		break;
+	case MSG_COORDINATE:
+		m_Dlg_AnalyzeWave.OutputFigure_Particular_Original(*(CPoint*)ot->buffer);
 		break;
 	}
 	//pPointerView->Call_D3DInfo(pInfo);
