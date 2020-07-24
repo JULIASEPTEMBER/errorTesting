@@ -101,4 +101,33 @@ struct OUTPUT_SENDMSG_COM{
 	UINT nLen;
 	BYTE* buffer;
 };
-#define MSG_SEND			1
+
+#define MSG_SEND				1
+#define MSG_POP_INFO			2//SEND THE MOUSE MOVE DATA FROM VIEW CLASS. THE SKETCH DLG WILL GET THE DETAIL
+#define MSG_COORDINATE			3//Drawing according to coordinate 
+
+
+extern UINT nPointerViewHWND;
+
+typedef int (CALLBACK* PLCIDECALLBACK)(int *pInfo);//
+
+
+extern UINT nPointerView;
+
+extern UINT nPointerDlgSketch;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
